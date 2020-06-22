@@ -1,0 +1,22 @@
+- COÛT
+
+Quand on parle de TO, on doit se mettre d'accord sur le coût qu'on doit payer pour les transports.
+
+Exemple 1: 
+Sur les problèmes de distribution des croissants: le temps de parcours, carburant (plus économique), ... Quand on change le coût, le transport qui était optimal pour le nombre de km peut ne pas être optimale pour l'essence ou pour le temps
+
+Exemple 2:
+Pour les couleurs, quelle couleur est plus proche de l'autre. On peut prendre la distance comme coût. Comme par exemple: la distance euclidienne d'un couleur à un autre, ou bien aussi d'autre distance comme la distance de Wasserstein. Donc le coût avec un transfert avec la distance euclidienne peut être moins optimal que avec une autre.
+
+Donc le notion de coût n'est pas forcement fixé, mais elle change selon quel critère on veut être le plus éfficace.
+
+- COMSERVATION DE LA MASSE
+
+Nombre de produits à transferer = nombre d'individue qui reçoit
+
+Exemple 1:
+On va avoir une référence (tableau picasso) + entrée (palètte de couleur d'un tableau: sésane) -> on peut onvoyer les couleurs de picasso sur sésane par exempe.
+
+Exemple 2: dans notre cas de recommandation de film par exemple
+
+
