@@ -205,3 +205,117 @@ ex2_user3
 ## apres
 ## user's 1 et user's 3 preferences ont les plus proches d = 0.25
 
+
+
+###################
+###################
+# Data processing #
+###################
+###################
+
+# 1 -
+# ratings >= 4 
+# len(ratings) == 20000263
+# length after 9995410
+s = (ratings[ratings.rating.values >= 4]).reset_index(drop=True)
+del s['timestamp']
+print(s.isnull().any())
+
+# 2 - 
+# drop no tags genomes data
+id_genome = genome_scores.movieId.unique().tolist()
+notin_genome = set(movies.movieId.unique().tolist()) - set(id_genome)
+movies = (movies[~movies.movieId.isin(notin_genome)]).reset_index(drop=True)
+
+# 3 -
+# take only 10 users, reduciton de données
+all_users = ratings.userId.unique().tolist()
+n_users = np.random.choice(all_users, 5)
+notin_user = set(s.userId.unique().tolist()) - set(n_users)
+s = (s[~s.userId.isin(notin_user)]).reset_index(drop=True)
+
+# merging data
+data = movies.merge(s, on = 'movieId', how='inner')
+
+# 4 -
+# all unique movies with rating >= 4
+Idx_unique_movies = data['movieId'].unique().tolist()
+movies = movies.loc[movies['movieId'].isin(Idx_unique_movies)]
+
+# 5 -
+# index of all users
+Idx_uniques_users = ratings['userId'].unique().tolist()
+
+# 6 -
+# exeperimental setup based on items
+
+# train:test = 3:1
+rs = ShuffleSplit(n_splits = 1, test_size = 0.25, random_state = len(movies))
+rs.get_n_splits(movies)
+
+for train_index, test_index in rs.split(movies):
+    print("TRAIN:", train_index, "TEST:", test_index)
+    
+
+mv_interact_V = (movies.iloc[train_index][:]).reset_index(drop=True)
+mv_coldStrt_C = (movies.iloc[test_index][:]).reset_index(drop=True)
+
+print('longueur training :', len(mv_interact_V), '=',round (len(mv_interact_V) / len(movies) * 100, 0), '%:')
+print('longueur test :', len(mv_coldStrt_C), '=', round(len(mv_coldStrt_C) / len(movies) * 100, 0), '%')
+
+
+###################
+###################
+##### program #####
+###################
+###################
+
+# regularisation parameter
+reg = 0.05
+
+
+# Matrix loss M€R^(nxs)_+
+def Matrix_loss_all(data1, data2, genome_scores):
+    m = len(data1)
+    n = len(data2)
+
+    M = np.zeros((m,n))
+
+    for i in range(m):
+        for j in range(n):
+
+            # pour comparer la distance entre deux films, on prend les tags genomes 
+            # des deux, ici ce sont vi et vj
+            # ce qui donne la matrice de coût M
+            # où Mij = 1 - sim(vi,vj) (cosinue similtary)
+
+            # movies 1
+            mvId1 = data1.iloc[i][0] # pour récuperer le movieId
+            #print(mvId1)
+            v1 = genome_scores[genome_scores.movieId == mvId1].relevance.values
+            #print(us1_mvId)
+
+            # movies 2
+            mvId2 = data2.iloc[j][0] # pour récuprer le movieId
+            v2 = genome_scores[genome_scores.movieId == mvId2].relevance.values
+            #print(mvId2)
+            
+            M[i, j] = round(cosine(v1, v2), 2)
+            #M[i, j] = 1 - np.dot(v1, v3)/(norm(v1)*norm(v3))
+            #print(M[i,j])
+
+    #M_ = pd.DataFrame(data = M, index = list(data.title.values), columns=list(data.title.values))
+    return M
+
+M = Matrix_loss_all(mv_interact_V, mv_coldStrt_C, genome_scores)
+
+# conjugate variable K
+# K := e^(-M/reg)
+#K = .......... 
+
+
+# compute g where D.T * g = 0, g € R^s
+# g_u* € argmin H*_pu(g) 
+
+# alpha
+# alpha := a^(g/reg)
